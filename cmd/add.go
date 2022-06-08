@@ -1,13 +1,11 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"okieoth/memo/cmd/add"
 )
 
 // addCmd represents the add command
@@ -21,23 +19,24 @@ As result the program responds with one ID per target for the stored memo.
 This ID can be used to show later entries or to delete or done them.
 
 For example:
+# starts some kind of interactive mode, where you can enter your memo
+# and the related targets
+memo add
+
+# add a new memo as one liner ...
+# the text 'This is my first memo' is stored in target1 and target2
+memo add This is my first memo \#target1 \#target2
 ...
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("add called")
+		if add.IsInteractiveMode(args) {
+			fmt.Println("add called - interactive mode")
+		} else {
+			fmt.Println("add called - take the input from the commandline")
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(addCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// addCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
