@@ -10,4 +10,7 @@ manage on-the-fly memos from the terminal.
 ```bash
 # run tests
 go test ./...
+
+# run all tests with coverage
+go test -cover ./...
 ```

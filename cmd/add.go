@@ -29,7 +29,7 @@ memo add This is my first memo \#target1 \#target2
 ...
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		if add.IsInteractiveMode(args) {
+		if add.IsInteractiveMode(&args) {
 			fmt.Println("add called - interactive mode")
 		} else {
 			fmt.Println("add called - take the input from the commandline")
