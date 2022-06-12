@@ -1,13 +1,17 @@
 package add
 
 import (
+	"bufio"
 	"errors"
+	"fmt"
+	"io"
 	"regexp"
+	"strings"
 )
 
 type Memo struct {
-	text    string
-	targets []string
+	Text    string
+	Targets []string
 }
 
 func IsInteractiveMode(args *[]string) bool {
@@ -17,22 +21,35 @@ func IsInteractiveMode(args *[]string) bool {
 	return false
 }
 
+func GetMemoFromStdin(stdin io.Reader) (Memo, error) {
+	var memo Memo
+	scanner := bufio.NewScanner(stdin)
+	fmt.Print("Enter the memo: ")
+	scanner.Scan()
+	text := scanner.Text()
+	if len(text) == 0 {
+		return memo, errors.New("no input, so further processing is skipped ... bye")
+	}
+	splittedText := strings.Fields(text)
+	return ParseInput(&splittedText)
+}
+
 func ParseInput(inputStrings *[]string) (Memo, error) {
 	var memo Memo
 	r, _ := regexp.Compile("#[a-zA-Z0-9.-_]*")
 	for _, s := range *inputStrings {
 		if r.MatchString(s) {
-			memo.targets = append(memo.targets, s[1:])
+			memo.Targets = append(memo.Targets, s[1:])
 		} else {
-			if len(memo.text) == 0 {
-				memo.text = s
+			if len(memo.Text) == 0 {
+				memo.Text = s
 			} else {
-				memo.text = memo.text + " " + s
+				memo.Text = memo.Text + " " + s
 			}
 		}
 	}
-	if memo.text == "" {
-		return memo, errors.New("no text given")
+	if memo.Text == "" {
+		return memo, errors.New("no text given, nothing to proccess ... bye")
 	} else {
 		return memo, nil
 	}

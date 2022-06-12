@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -29,10 +30,20 @@ memo add This is my first memo \#target1 \#target2
 ...
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		var memo add.Memo
+		var err error
 		if add.IsInteractiveMode(&args) {
-			fmt.Println("add called - interactive mode")
+			memo, err = add.GetMemoFromStdin(os.Stdin)
 		} else {
-			fmt.Println("add called - take the input from the commandline")
+			memo, err = add.ParseInput(&args)
+		}
+		if err != nil {
+			fmt.Println("Error while parsing input: ", err)
+			os.Exit(1)
+		} else {
+			fmt.Println("Received memo: ", memo.Text)
+			output := fmt.Sprintf("  included targets: %v,\n (number of targets: %d)", memo.Targets, len(memo.Targets))
+			fmt.Println(output)
 		}
 	},
 }

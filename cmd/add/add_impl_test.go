@@ -1,6 +1,7 @@
 package add
 
 import (
+	"bytes"
 	"testing"
 )
 
@@ -20,63 +21,106 @@ func TestIsInteractiveMode(t *testing.T) {
 func TestParseInput_1(t *testing.T) {
 	var testData = []string{"aaa", "bbb", "#test"}
 	ret, e := ParseInput(&testData)
-	if e != nil {
-		t.Errorf("TestPartInput_2 error: %v", e)
-	}
-	l := len(ret.targets)
-	if l != 1 {
-		t.Errorf("TestPartInput_1 wrong target len: %d", l)
-	}
-	target := ret.targets[0]
-	if target != "test" {
-		t.Errorf("TestPartInput_1 wrong target content: %s", target)
-	}
+	parseInput1(ret, e, t, "TestParseInput_1")
+}
 
-	text := ret.text
-	if text != "aaa bbb" {
-		t.Errorf("TestParamInput_1 wrong text: %s", text)
-	}
+func TestGetMemoFromStdin_1(t *testing.T) {
+	var stdin bytes.Buffer
+
+	stdin.Write([]byte("aaa bbb #test\n"))
+	ret, e := GetMemoFromStdin(&stdin)
+	parseInput1(ret, e, t, "TestGetMemoFromStdin_1")
 }
 
 func TestParseInput_2(t *testing.T) {
 	var testData = []string{"aaa", "bbb"}
 	ret, e := ParseInput(&testData)
-	if e != nil {
-		t.Errorf("TestPartInput_2 error: %v", e)
-	}
-	l := len(ret.targets)
-	if l != 0 {
-		t.Errorf("TestPartInput_2 wrong target len: %d", l)
-	}
-	text := ret.text
-	if text != "aaa bbb" {
-		t.Errorf("TestParamInput_2 wrong text: %s", text)
-	}
+	parseInput2(ret, e, t, "TestParseInput_2")
+}
+
+func TestGetMemoFromStdin_2(t *testing.T) {
+	var stdin bytes.Buffer
+
+	stdin.Write([]byte("aaa bbb\n"))
+	ret, e := GetMemoFromStdin(&stdin)
+	parseInput2(ret, e, t, "TestGetMemoFromStdin_2")
 }
 
 func TestParseInput_3(t *testing.T) {
 	var testData = []string{"#aaa", "#bbb"}
 	ret, e := ParseInput(&testData)
-	if e == nil {
-		t.Errorf("TestPartInput_3 no error: %v", ret)
+	parseInput3(ret, e, t, "TestParseInput_3")
+}
+
+func TestGetMemoFromStdin_3(t *testing.T) {
+	var stdin bytes.Buffer
+
+	stdin.Write([]byte("#aaa #bbb\n"))
+	ret, e := GetMemoFromStdin(&stdin)
+	parseInput3(ret, e, t, "TestGetMemoFromStdin_3")
+}
+
+func TestParseInput_4(t *testing.T) {
+	var testData = []string{"aaa", "bbb", "#test", "`xxx`,**bold**,("}
+	ret, e := ParseInput(&testData)
+	parseInput4(ret, e, t, "TestParseInput_4")
+}
+
+func TestGetMemoFromStdin_4(t *testing.T) {
+	var stdin bytes.Buffer
+
+	stdin.Write([]byte("aaa bbb #test `xxx`,**bold**,(\n"))
+	ret, e := GetMemoFromStdin(&stdin)
+	parseInput4(ret, e, t, "TestGetMemoFromStdin_4")
+}
+
+func parseInput1(ret Memo, e error, t *testing.T, caller string) {
+	expectedTargets := []string{"test"}
+	parseInput(ret, e, t, caller, "aaa bbb", expectedTargets, false)
+}
+
+func parseInput2(ret Memo, e error, t *testing.T, caller string) {
+	expectedTargets := []string{}
+	parseInput(ret, e, t, caller, "aaa bbb", expectedTargets, false)
+}
+
+func parseInput3(ret Memo, e error, t *testing.T, caller string) {
+	expectedTargets := []string{"aaa", "bbb"}
+	parseInput(ret, e, t, caller, "", expectedTargets, true)
+}
+
+func parseInput4(ret Memo, e error, t *testing.T, caller string) {
+	expectedTargets := []string{"test"}
+	parseInput(ret, e, t, caller, "aaa bbb `xxx`,**bold**,(", expectedTargets, false)
+}
+
+func parseInput(ret Memo, e error, t *testing.T, caller string, expectedTxt string, expectedTargets []string, errorExpected bool) {
+	if (!errorExpected) && (e != nil) {
+		t.Errorf("%s error: %v", caller, e)
 	}
-	l := len(ret.targets)
-	if l != 2 {
-		t.Errorf("TestPartInput_3 wrong target len: %d", l)
+	l := len(ret.Targets)
+	expectedTargetsLen := len(expectedTargets)
+	if l != expectedTargetsLen {
+		t.Errorf("%s wrong target len: %d, expected len: %d", caller, l, expectedTargetsLen)
 	}
-	text := ret.text
-	if text != "" {
-		t.Errorf("TestParamInput_3 wrong text: %s", text)
+	for i, expectedTarget := range expectedTargets {
+		if expectedTarget != ret.Targets[i] {
+			t.Errorf("%s wrong target: %s, expected: %s", caller, ret.Targets[i], expectedTarget)
+		}
+	}
+	text := ret.Text
+	if text != expectedTxt {
+		t.Errorf("%s wrong text: %s, expected: %s", caller, text, expectedTxt)
 	}
 }
 
 func TestMemo(t *testing.T) {
 
 	memo1 := Memo{}
-	if memo1.text != "" {
-		t.Errorf(`memo1.text isn't "", instead %v`, memo1.text)
+	if memo1.Text != "" {
+		t.Errorf(`memo1.text isn't "", instead %v`, memo1.Text)
 	}
-	if memo1.text != "" {
-		t.Errorf(`memo1.text isn't "", instead %v`, memo1.text)
+	if memo1.Text != "" {
+		t.Errorf(`memo1.text isn't "", instead %v`, memo1.Text)
 	}
 }
