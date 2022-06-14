@@ -7,6 +7,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"okieoth/memo/cmd/add"
+
+	"okieoth/memo/internal/pkg/config"
 )
 
 // addCmd represents the add command
@@ -30,22 +32,27 @@ memo add This is my first memo \#target1 \#target2
 ...
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		var memo add.Memo
-		var err error
-		if add.IsInteractiveMode(&args) {
-			memo, err = add.GetMemoFromStdin(os.Stdin)
-		} else {
-			memo, err = add.ParseInput(&args)
-		}
-		if err != nil {
-			fmt.Println("Error while parsing input: ", err)
-			os.Exit(1)
-		} else {
-			fmt.Println("Received memo: ", memo.Text)
-			output := fmt.Sprintf("  included targets: %v,\n (number of targets: %d)", memo.Targets, len(memo.Targets))
-			fmt.Println(output)
-		}
+		config := config.Get()
+		run(args, config)
 	},
+}
+
+func run(args []string, config config.Config) {
+	var memo add.Memo
+	var err error
+	if add.IsInteractiveMode(&args) {
+		memo, err = add.GetMemoFromStdin(os.Stdin)
+	} else {
+		memo, err = add.ParseInput(&args)
+	}
+	if err != nil {
+		fmt.Println("Error while parsing input: ", err)
+		os.Exit(1)
+	} else {
+		fmt.Println("Received memo: ", memo.Text)
+		output := fmt.Sprintf("  included targets: %v,\n (number of targets: %d)", memo.Targets, len(memo.Targets))
+		fmt.Println(output)
+	}
 }
 
 func init() {
