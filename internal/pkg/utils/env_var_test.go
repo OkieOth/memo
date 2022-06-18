@@ -7,11 +7,20 @@ import (
 func TestReplaceEnvVars(t *testing.T) {
 	ret, err := ReplaceEnvVars("$HOME/$USER/${PATH}")
 	if err != nil {
-		t.Errorf("Error in ReplaceEnvVar: %v", err)
+		t.Errorf("Error in ReplaceEnvVar (1): %v", err)
 		return
 	}
 	if ret == "$HOME/$USER/${UID}" {
 		t.Errorf("Nothing replaced: %v", ret)
+		return
+	}
+	ret, err = ReplaceEnvVars("This is a text w/o any env var")
+	if err != nil {
+		t.Errorf("Error in ReplaceEnvVar (2): %v", err)
+		return
+	}
+	if ret != "This is a text w/o any env var" {
+		t.Errorf("Wrong return: %v", ret)
 		return
 	}
 }

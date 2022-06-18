@@ -1,8 +1,9 @@
 package config
 
 import (
-	//	"encoding/json"
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"os"
 )
 
@@ -39,7 +40,10 @@ func GetFromFile(filepath string) (Config, error) {
 		return Config{}, err
 	}
 	defer jsonFile.Close()
-	return Config{}, errors.New("todo")
+	var config Config
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	err = json.Unmarshal(byteValue, &config)
+	return config, err
 }
 
 func GetDefaultConfig() Config {
