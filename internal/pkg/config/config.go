@@ -14,19 +14,21 @@ that are availe for the memo app
 type Config struct {
 	// Directory to store the single files with the memos
 	TargetDir string
+
+	// Default target to use if no other target is given
+	DefaultTarget string
 }
 
 func Get() Config {
 	// look for $HOME/.memo/config.json
-	conf, err := GetFromFile("$HOME/.memo/config.json")
+	conf, err := getFromFile("$HOME/.memo/config.json")
 	if err != nil {
-		return GetDefaultConfig()
-	} else {
-		return conf
+		conf = getDefaultConfig()
 	}
+	return conf
 }
 
-func GetFromFile(filepath string) (Config, error) {
+func getFromFile(filepath string) (Config, error) {
 	info, err := os.Stat(filepath)
 	if os.IsNotExist(err) {
 		return Config{}, errors.New("config file doesn't exist")
@@ -46,8 +48,9 @@ func GetFromFile(filepath string) (Config, error) {
 	return config, err
 }
 
-func GetDefaultConfig() Config {
+func getDefaultConfig() Config {
 	conf := Config{}
 	conf.TargetDir = "$HOME/.memo/targets"
+	conf.DefaultTarget = "default"
 	return conf
 }

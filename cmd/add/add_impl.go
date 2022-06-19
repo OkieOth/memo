@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"okieoth/memo/internal/pkg/config"
 	"regexp"
 	"strings"
 )
@@ -53,4 +54,20 @@ func ParseInput(inputStrings *[]string) (Memo, error) {
 	} else {
 		return memo, nil
 	}
+}
+
+func storeNow(target string, text string, config config.Config) {
+	// TODO
+}
+
+func StoreMemo(memo Memo, config config.Config) error {
+	if len(memo.Targets) == 0 {
+		// store the memo in the default target
+		storeNow(config.DefaultTarget, memo.Text, config)
+	} else {
+		for _, t := range memo.Targets {
+			storeNow(t, memo.Text, config)
+		}
+	}
+	return errors.New("TODO")
 }

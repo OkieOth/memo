@@ -1,3 +1,4 @@
 {
-    "targetDir": "~/.memo/targets"
+    "targetDir": "~/.memo/targets",
+    "defaultTarget": "other_stuff"
 }
