@@ -33,20 +33,67 @@ func TestDoesFileExist(t *testing.T) {
 	doesExist, err = DoesFileExist(file1) // call the function with a real file
 	if !doesExist {
 		t.Errorf("file was not found: %s", file1)
-		return
 	}
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
-		return
 	}
 	file2 := fmt.Sprintf("%s/../../../main.go", path)
 	doesExist, err = DoesFileExist(file2) // call the function with a real file
 	if !doesExist {
 		t.Errorf("file was not found: %s", file2)
-		return
 	}
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestDoesDirExist(t *testing.T) {
+	path, err := os.Getwd()
+	if err != nil {
+		t.Error("Error while query current working directory")
 		return
+	}
+	exists, e := DoesDirExist(path)
+	if (!exists) || (e != nil) {
+		t.Errorf("DoesDirExist couldn't find working dir: exists=%v, err=%v, path=%s", exists, e, path)
+	}
+	file1 := fmt.Sprintf("%s/env_var.go", path)
+	exists, e = DoesDirExist(file1) // call the function with a real file
+	if (exists) || (e == nil) {
+		t.Errorf("DoesDirExist couldn't find file as dir: exists=%v, err=%v, path=%s", exists, e, file1)
+	}
+	exists, e = DoesDirExist("/this/is/a/fake/dir")
+	if (exists) || (e != nil) {
+		t.Errorf("DoesDirExist couldn't detect a not existing dir: exists=%v, err=%v, path=%s", exists, e, path)
+	}
+}
+
+func TestCreateDirIfNotExist(t *testing.T) {
+	path, err := os.Getwd()
+	if err != nil {
+		t.Error("Error while query current working directory")
+		return
+	}
+	created, e := CreateDirIfNotExist(path)
+	if (created) || (e != nil) {
+		t.Errorf("CreateDirIfNotExist couldn't find working dir: created=%v, err=%v, path=%s", created, e, path)
+	}
+
+	dir1 := fmt.Sprintf("%s/tmp/TestCreateDirIfNotExist", path)
+	created, e = CreateDirIfNotExist(dir1)
+	if (!created) || (e != nil) {
+		t.Errorf("CreateDirIfNotExist didn't work: created=%v, err=%v, path=%s", created, e, dir1)
+	}
+	created, e = DoesDirExist(dir1)
+	if (!created) || (e != nil) {
+		t.Errorf("DoesDirExist didn't find fresh created dir: created=%v, err=%v, path=%s", created, e, dir1)
+	}
+	e = os.RemoveAll(dir1)
+	if e != nil {
+		t.Errorf("Couldn't remove fresh created dir: err=%v, path=%s", e, dir1)
+	}
+	created, e = DoesDirExist(dir1)
+	if (created) || (e != nil) {
+		t.Errorf("DoesDirExist found fresh created dir: created=%v, err=%v, path=%s", created, e, dir1)
 	}
 }

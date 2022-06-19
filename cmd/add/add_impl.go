@@ -57,7 +57,8 @@ func ParseInput(inputStrings *[]string) (Memo, error) {
 }
 
 func storeNow(target string, text string, config config.Config) {
-	// TODO
+	//targetDir := config.TargetDir
+
 }
 
 func StoreMemo(memo Memo, config config.Config) error {
