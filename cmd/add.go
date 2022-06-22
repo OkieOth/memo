@@ -52,11 +52,6 @@ func run(args []string, config config.Config) {
 		err := add.StoreMemo(memo, config)
 		if err != nil {
 			fmt.Printf("Error while store memo: %v", err)
-		} else {
-			// TODO
-			fmt.Println("Received memo: ", memo.Text)
-			output := fmt.Sprintf("  included targets: %v,\n (number of targets: %d)", memo.Targets, len(memo.Targets))
-			fmt.Println(output)
 		}
 	}
 }

@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"io"
 	"okieoth/memo/internal/pkg/config"
+	"okieoth/memo/internal/pkg/utils"
+	"os"
 	"regexp"
 	"strings"
+	"time"
 )
 
 type Memo struct {
@@ -56,19 +59,43 @@ func ParseInput(inputStrings *[]string) (Memo, error) {
 	}
 }
 
-func storeNow(target string, text string, config config.Config) {
-	//targetDir := config.TargetDir
-
+func storeNow(target string, text string, config config.Config) error {
+	targetDir, err := utils.CreateDirIfNotExist(config.TargetDir)
+	if err != nil {
+		return err
+	}
+	targetFileName := fmt.Sprintf("%s/%s.md", targetDir, target)
+	f, err := os.OpenFile(targetFileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if _, err = f.WriteString(text); err != nil {
+		return err
+	}
+	return nil
 }
 
 func StoreMemo(memo Memo, config config.Config) error {
+	timestamp := time.Now()
+	nowStr := timestamp.Format("20060102140405")
+	outputTxt := fmt.Sprintf("* %s [%s]\n", memo.Text, nowStr)
 	if len(memo.Targets) == 0 {
 		// store the memo in the default target
-		storeNow(config.DefaultTarget, memo.Text, config)
+		err := storeNow(config.DefaultTarget, outputTxt, config)
+		if err == nil {
+			fmt.Printf("  created memo: %s-%s\n", config.DefaultTarget, nowStr)
+		}
+		return err
 	} else {
 		for _, t := range memo.Targets {
-			storeNow(t, memo.Text, config)
+			err := storeNow(t, outputTxt, config)
+			if err == nil {
+				return err
+			} else {
+				fmt.Printf("  created memo: %s-%s", t, nowStr)
+			}
 		}
 	}
-	return errors.New("TODO")
+	return nil
 }

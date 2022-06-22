@@ -74,26 +74,26 @@ func TestCreateDirIfNotExist(t *testing.T) {
 		t.Error("Error while query current working directory")
 		return
 	}
-	created, e := CreateDirIfNotExist(path)
-	if (created) || (e != nil) {
-		t.Errorf("CreateDirIfNotExist couldn't find working dir: created=%v, err=%v, path=%s", created, e, path)
+	pathStr, e := CreateDirIfNotExist(path)
+	if (pathStr != path) || (e != nil) {
+		t.Errorf("CreateDirIfNotExist couldn't find working dir: created=%v, err=%v, path=%s", pathStr, e, path)
 	}
 
 	dir1 := fmt.Sprintf("%s/tmp/TestCreateDirIfNotExist", path)
-	created, e = CreateDirIfNotExist(dir1)
-	if (!created) || (e != nil) {
-		t.Errorf("CreateDirIfNotExist didn't work: created=%v, err=%v, path=%s", created, e, dir1)
+	pathStr, e = CreateDirIfNotExist(dir1)
+	if (pathStr != dir1) || (e != nil) {
+		t.Errorf("CreateDirIfNotExist didn't work: created=%v, err=%v, path=%s", pathStr, e, dir1)
 	}
-	created, e = DoesDirExist(dir1)
-	if (!created) || (e != nil) {
-		t.Errorf("DoesDirExist didn't find fresh created dir: created=%v, err=%v, path=%s", created, e, dir1)
+	created, e2 := DoesDirExist(dir1)
+	if (!created) || (e2 != nil) {
+		t.Errorf("DoesDirExist didn't find fresh created dir: created=%v, err=%v, path=%s", created, e2, dir1)
 	}
-	e = os.RemoveAll(dir1)
-	if e != nil {
-		t.Errorf("Couldn't remove fresh created dir: err=%v, path=%s", e, dir1)
+	e2 = os.RemoveAll(dir1)
+	if e2 != nil {
+		t.Errorf("Couldn't remove fresh created dir: err=%v, path=%s", e2, dir1)
 	}
-	created, e = DoesDirExist(dir1)
-	if (created) || (e != nil) {
-		t.Errorf("DoesDirExist found fresh created dir: created=%v, err=%v, path=%s", created, e, dir1)
+	created, e2 = DoesDirExist(dir1)
+	if (created) || (e2 != nil) {
+		t.Errorf("DoesDirExist found fresh created dir: created=%v, err=%v, path=%s", created, e2, dir1)
 	}
 }
