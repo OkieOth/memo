@@ -5,9 +5,10 @@ Copyright © 2022 Eiko Thomas
 package cmd
 
 import (
-	"os"
-
+	"bufio"
+	"fmt"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -17,9 +18,34 @@ var rootCmd = &cobra.Command{
 	Long: `The tool supports the creation, search and list of on-the-fly
 textual memos from the terminal.
 `,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	// this command is executed if no command was given over the command line
+	Run: func(cmd *cobra.Command, args []string) {
+		scanner := bufio.NewScanner(os.Stdin)
+		fmt.Print("command? [add|del|done|find|list|exit]: ")
+		stayInLoop := true
+		for stayInLoop {
+			stayInLoop = false
+			scanner.Scan()
+			switch scanner.Text() {
+			case "add":
+				addCmd.Run(cmd, args)
+			case "del":
+				delCmd.Run(cmd, args)
+			case "done":
+				doneCmd.Run(cmd, args)
+			case "find":
+				findCmd.Run(cmd, args)
+			case "list":
+				listCmd.Run(cmd, args)
+			case "exit":
+				fmt.Println("bye.")
+				return
+			default:
+				stayInLoop = true
+				fmt.Print("enter a valid command? [add|del|done|find|list|exit]: ")
+			}
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
