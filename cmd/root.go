@@ -7,8 +7,10 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"github.com/spf13/cobra"
+	"okieoth/memo/cmd/add"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -28,7 +30,15 @@ textual memos from the terminal.
 			scanner.Scan()
 			switch scanner.Text() {
 			case "add":
-				addCmd.Run(cmd, args)
+				text := add.GetMemoTextFromStdin(os.Stdin)
+				targets := add.GetTargetsFromStdin(os.Stdin)
+				header := add.GetMemoHeaderFromStdin(os.Stdin)
+				addCmd.Flags().Set("text", text)
+				addCmd.Flags().Set("target", targets)
+				if len(header) > 0 {
+					addCmd.Flags().Set("header", header)
+				}
+				addCmd.Run(addCmd, args)
 			case "del":
 				delCmd.Run(cmd, args)
 			case "done":

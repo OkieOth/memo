@@ -25,6 +25,47 @@ func IsInteractiveMode(args *[]string) bool {
 	return false
 }
 
+func getStringFromStdin(stdin io.Reader, inputMsg string, canBeEmpty bool) string {
+	scanner := bufio.NewScanner(stdin)
+	fmt.Print(inputMsg)
+	scanner.Scan()
+	text := scanner.Text()
+	for (len(text) == 0) && (!canBeEmpty) {
+		fmt.Println(inputMsg)
+		scanner.Scan()
+		text = scanner.Text()
+	}
+	return text
+}
+
+func GetMemoTextFromStdin(stdin io.Reader) string {
+	return getStringFromStdin(stdin, "Enter a text (cancel with CTRL-C): ", false)
+}
+
+func GetMemoHeaderFromStdin(stdin io.Reader) string {
+	return getStringFromStdin(stdin, "Enter a Header (cancel with CTRL-C): ", true)
+}
+
+func GetTargetsFromStdin(stdin io.Reader) string {
+	r, _ := regexp.Compile("[a-zA-Z0-9.-_ ]+")
+	scanner := bufio.NewScanner(stdin)
+	fmt.Print("Enter targets separated by space: ")
+	scanner.Scan()
+	text := scanner.Text()
+	for len(text) == 0 {
+		fmt.Println("Enter a targets or cancel with CTRL-C")
+		scanner.Scan()
+		text = scanner.Text()
+		if len(text) > 0 {
+			if !r.MatchString(text) {
+				fmt.Println(" ...wrong input! Only [a-zA-Z0-9.-_] allowed.")
+				text = ""
+			}
+		}
+	}
+	return text
+}
+
 func GetMemoFromStdin(stdin io.Reader) (Memo, error) {
 	var memo Memo
 	scanner := bufio.NewScanner(stdin)

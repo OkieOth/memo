@@ -35,6 +35,7 @@ memo add This is my first memo \#target1 \#target2
 		header, _ := cmd.Flags().GetString("header")
 		targets, _ := cmd.Flags().GetStringArray("target")
 		text, _ := cmd.Flags().GetString("text")
+
 		fmt.Printf("Received header: %s\n", header)
 		fmt.Printf("Received targets: %v\n", targets)
 		fmt.Printf("Received memo-text: %v\n", text)
@@ -65,7 +66,7 @@ func run(args []string, config config.Config) {
 
 func init() {
 	rootCmd.AddCommand(addCmd)
-	addCmd.Flags().StringArrayP("target", "t", make([]string, 0), "target to store this memo")
+	addCmd.Flags().StringArrayP("target", "t", make([]string, 0), "targets to store this memo")
 	addCmd.Flags().StringP("header", "H", "", "header used for this memo")
 	addCmd.Flags().StringP("text", "T", "", "text to store")
 }
