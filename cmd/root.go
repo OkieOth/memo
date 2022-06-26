@@ -30,15 +30,7 @@ textual memos from the terminal.
 			scanner.Scan()
 			switch scanner.Text() {
 			case "add":
-				text := add.GetMemoTextFromStdin(os.Stdin)
-				targets := add.GetTargetsFromStdin(os.Stdin)
-				header := add.GetMemoHeaderFromStdin(os.Stdin)
-				addCmd.Flags().Set("text", text)
-				addCmd.Flags().Set("target", targets)
-				if len(header) > 0 {
-					addCmd.Flags().Set("header", header)
-				}
-				addCmd.Run(addCmd, args)
+				initAndExecuteAddCommand(args)
 			case "del":
 				delCmd.Run(cmd, args)
 			case "done":
@@ -77,4 +69,19 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+/*
+Queries from the stdin the additional parameter needed for the add command
+*/
+func initAndExecuteAddCommand(args []string) {
+	var stdin add.InitStdin
+	stdin.Stdin = os.Stdin
+	text, targets, header := add.InitFromStdin(stdin)
+	addCmd.Flags().Set("text", text)
+	addCmd.Flags().Set("target", targets)
+	if len(header) > 0 {
+		addCmd.Flags().Set("header", header)
+	}
+	addCmd.Run(addCmd, args)
 }

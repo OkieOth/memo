@@ -36,31 +36,24 @@ memo add This is my first memo \#target1 \#target2
 		targets, _ := cmd.Flags().GetStringArray("target")
 		text, _ := cmd.Flags().GetString("text")
 
-		fmt.Printf("Received header: %s\n", header)
-		fmt.Printf("Received targets: %v\n", targets)
-		fmt.Printf("Received memo-text: %v\n", text)
-
+		var memo add.Memo
+		memo.Header = header
+		memo.Targets = targets
+		memo.Text = text
 		config := config.Get()
-		run(args, config)
+		run(args, config, memo)
 	},
 }
 
-func run(args []string, config config.Config) {
-	var memo add.Memo
-	var err error
-	if add.IsInteractiveMode(&args) {
-		memo, err = add.GetMemoFromStdin(os.Stdin)
-	} else {
-		memo, err = add.ParseInput(&args)
+func run(args []string, config config.Config, memo add.Memo) {
+	if len(memo.Text) == 0 {
+		var stdin add.InitStdin
+		stdin.Stdin = os.Stdin
+		add.InitMemoFromStdin(stdin, &memo)
 	}
+	err := add.StoreMemo(memo, config)
 	if err != nil {
-		fmt.Println("Error while parsing input: ", err)
-		os.Exit(1)
-	} else {
-		err := add.StoreMemo(memo, config)
-		if err != nil {
-			fmt.Printf("Error while store memo: %v", err)
-		}
+		fmt.Printf("Error while store memo: %v", err)
 	}
 }
 

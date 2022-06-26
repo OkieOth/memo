@@ -2,7 +2,6 @@ package add
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
 	"okieoth/memo/internal/pkg/config"
@@ -16,13 +15,7 @@ import (
 type Memo struct {
 	Text    string
 	Targets []string
-}
-
-func IsInteractiveMode(args *[]string) bool {
-	if len(*args) == 0 {
-		return true
-	}
-	return false
+	Header  string
 }
 
 func getStringFromStdin(stdin io.Reader, inputMsg string, canBeEmpty bool) string {
@@ -38,15 +31,15 @@ func getStringFromStdin(stdin io.Reader, inputMsg string, canBeEmpty bool) strin
 	return text
 }
 
-func GetMemoTextFromStdin(stdin io.Reader) string {
+func getMemoTextFromStdin(stdin io.Reader) string {
 	return getStringFromStdin(stdin, "Enter a text (cancel with CTRL-C): ", false)
 }
 
-func GetMemoHeaderFromStdin(stdin io.Reader) string {
+func getMemoHeaderFromStdin(stdin io.Reader) string {
 	return getStringFromStdin(stdin, "Enter a Header (cancel with CTRL-C): ", true)
 }
 
-func GetTargetsFromStdin(stdin io.Reader) string {
+func getTargetsFromStdin(stdin io.Reader) string {
 	r, _ := regexp.Compile("[a-zA-Z0-9.-_ ]+")
 	scanner := bufio.NewScanner(stdin)
 	fmt.Print("Enter targets separated by space: ")
@@ -66,38 +59,54 @@ func GetTargetsFromStdin(stdin io.Reader) string {
 	return text
 }
 
-func GetMemoFromStdin(stdin io.Reader) (Memo, error) {
-	var memo Memo
-	scanner := bufio.NewScanner(stdin)
-	fmt.Print("Enter the memo: ")
-	scanner.Scan()
-	text := scanner.Text()
-	if len(text) == 0 {
-		return memo, errors.New("no input, so further processing is skipped ... bye")
-	}
-	splittedText := strings.Fields(text)
-	return ParseInput(&splittedText)
+type InitStdin struct {
+	Stdin     io.Reader
+	MockStdin [3]io.Reader
 }
 
-func ParseInput(inputStrings *[]string) (Memo, error) {
-	var memo Memo
-	r, _ := regexp.Compile("#[a-zA-Z0-9.-_]*")
-	for _, s := range *inputStrings {
-		if r.MatchString(s) {
-			memo.Targets = append(memo.Targets, s[1:])
-		} else {
-			if len(memo.Text) == 0 {
-				memo.Text = s
-			} else {
-				memo.Text = memo.Text + " " + s
-			}
-		}
+type StdinInputSource int64
+
+const (
+	Text StdinInputSource = iota
+	Target
+	Header
+)
+
+func (stdinInput InitStdin) get(inputSource StdinInputSource) io.Reader {
+	if stdinInput.Stdin != nil {
+		return stdinInput.Stdin
 	}
-	if memo.Text == "" {
-		return memo, errors.New("no text given, nothing to proccess ... bye")
-	} else {
-		return memo, nil
+	switch inputSource {
+	case Text:
+		return (stdinInput.MockStdin)[0]
+	case Target:
+		return (stdinInput.MockStdin)[1]
+	case Header:
+		return (stdinInput.MockStdin)[2]
+	default:
+		panic(fmt.Sprintf("Wrong input source type: %v", inputSource))
 	}
+}
+
+/*
+Init the memo parameters from stdin.
+*/
+func InitFromStdin(stdin InitStdin) (string, string, string) {
+	text := getMemoTextFromStdin(stdin.get(Text))
+	targets := getTargetsFromStdin(stdin.get(Target))
+	header := getMemoHeaderFromStdin(stdin.get(Header))
+	return text, targets, header
+}
+
+func InitMemoFromStdin(stdin InitStdin, memo *Memo) {
+	if memo == nil {
+		panic("Memo is nil! There is nothing to init from stdin")
+	}
+
+	text, targets, header := InitFromStdin(stdin)
+	memo.Text = text
+	memo.Targets = strings.Fields(targets)
+	memo.Header = header
 }
 
 func storeNow(target string, text string, config config.Config) error {
@@ -125,16 +134,16 @@ func StoreMemo(memo Memo, config config.Config) error {
 		// store the memo in the default target
 		err := storeNow(config.DefaultTarget, outputTxt, config)
 		if err == nil {
-			fmt.Printf("  created memo: %s-%s\n", config.DefaultTarget, nowStr)
+			fmt.Printf("  store memo: %s-%s\n", nowStr, config.DefaultTarget)
 		}
 		return err
 	} else {
 		for _, t := range memo.Targets {
 			err := storeNow(t, outputTxt, config)
-			if err == nil {
+			if err != nil {
 				return err
 			} else {
-				fmt.Printf("  created memo: %s-%s", t, nowStr)
+				fmt.Printf("  store memo: %s-%s\n", nowStr, t)
 			}
 		}
 	}
