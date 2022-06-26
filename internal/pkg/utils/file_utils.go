@@ -57,3 +57,14 @@ func CreateDirIfNotExist(dirPath string) (string, error) {
 		return path, err
 	}
 }
+
+func DeleteFileIfExist(filePath string) error {
+	b, err := DoesFileExist(filePath)
+	if err != nil {
+		return err
+	}
+	if b {
+		return os.Remove(filePath)
+	}
+	return nil
+}

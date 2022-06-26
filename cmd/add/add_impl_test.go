@@ -2,6 +2,9 @@ package add
 
 import (
 	"bytes"
+	"okieoth/memo/internal/pkg/config"
+	"okieoth/memo/internal/pkg/utils"
+	"os"
 	"testing"
 )
 
@@ -61,12 +64,39 @@ func TestInitMemoFromStdin_2(t *testing.T) {
 }
 
 func TestMemo(t *testing.T) {
-
 	memo1 := Memo{}
 	if memo1.Text != "" {
 		t.Errorf(`memo1.text isn't "", instead %v`, memo1.Text)
 	}
 	if memo1.Text != "" {
 		t.Errorf(`memo1.text isn't "", instead %v`, memo1.Text)
+	}
+}
+
+func TestStoreMemo(t *testing.T) {
+	var config config.Config
+	workingDir, err := os.Getwd()
+	if err != nil {
+		t.Error("Error while query current working directory")
+		return
+	}
+	config.TargetDir = workingDir + "/../../tmp"
+	testFile := config.TargetDir + "/add_impl_test.md"
+	// check if there is an old test file in the system
+	_ = utils.DeleteFileIfExist(testFile)
+
+	var memo Memo
+	memo.Text = "I am from TestStoreMemo"
+	memo.Targets = append(memo.Targets, "add_impl_test")
+	err = StoreMemo(memo, config)
+	if err != nil {
+		t.Errorf("Error while store memo: %v", err)
+	}
+	b, err := utils.DoesFileExist(testFile)
+	if (!b) || (err != nil) {
+		t.Errorf("Seems that the memo file wasn't created: b=%v, err=%v", b, err)
+	}
+	if utils.DeleteFileIfExist(testFile) != nil {
+		t.Errorf("Error while deleting tmp file output of the test: %s", testFile)
 	}
 }
