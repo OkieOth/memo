@@ -109,7 +109,7 @@ func InitMemoFromStdin(stdin InitStdin, memo *Memo) {
 	memo.Header = header
 }
 
-func storeNow(target string, text string, config config.Config) error {
+func storeNowAppend(target string, header string, text string, config config.Config) error {
 	targetDir, err := utils.CreateDirIfNotExist(config.TargetDir)
 	if err != nil {
 		return err
@@ -120,10 +120,115 @@ func storeNow(target string, text string, config config.Config) error {
 		return err
 	}
 	defer f.Close()
+	if header != "" {
+		headerStr := fmt.Sprintf("# %s\n", header)
+		if _, err = f.WriteString(headerStr); err != nil {
+			return err
+		}
+	}
 	if _, err = f.WriteString(text); err != nil {
 		return err
 	}
 	return nil
+}
+
+func storeNowWithHeader(target string, header string, text string, config config.Config, nowStr string) (string, string, error) {
+	// This function assumes that the headers in the markdown are first level header
+	targetDir, err := utils.CreateDirIfNotExist(config.TargetDir)
+	if err != nil {
+		return "", "", err
+	}
+	targetFileName := fmt.Sprintf("%s/%s.md", targetDir, target)
+	if doesExist, _ := utils.DoesFileExist(targetFileName); !doesExist {
+		err = storeNowAppend(target, header, text, config)
+		if err != nil {
+			return "", "", err
+		} else {
+			return "", "", nil
+		}
+	} else {
+		return storeNowWithHeaderExistingFile(targetDir, targetFileName, target, header, text, nowStr)
+	}
+}
+
+func storeNowWithHeaderExistingFile(targetDir string, targetFileName, target string, header string, text string, nowStr string) (string, string, error) {
+	// This function assumes that the headers in the markdown are first level header
+	f, err := os.OpenFile(targetFileName, os.O_RDONLY, 0600)
+	if err != nil {
+		return "", "", err
+	}
+	defer f.Close()
+	tmpFileName := fmt.Sprintf("%s/%s.%s.tmp", targetDir, target, nowStr)
+	fTmp, err2 := os.OpenFile(tmpFileName, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0600)
+	if err2 != nil {
+		return "", "", err2
+	}
+	defer fTmp.Close()
+
+	matchHeaderPattern := fmt.Sprintf(`^# *%s$`, header)
+	regexpMatchHeader, _ := regexp.Compile(matchHeaderPattern)
+
+	regexpAnyHeader, _ := regexp.Compile(`^#+ `)
+
+	scanner := bufio.NewScanner(f)
+	var line string
+	state := 0 // the state indicates if a header was found our not
+	for scanner.Scan() {
+		line = scanner.Text()
+
+		switch state {
+		case 0: // header not found
+			if regexpMatchHeader.MatchString(line) {
+				state = 1
+			}
+		case 1: // desired header found
+			if regexpAnyHeader.MatchString(line) {
+				// next header found
+				if _, err = fTmp.WriteString(text + "\n"); err != nil {
+					return "", "", err
+				}
+				state = 2
+			}
+		case 2: // memo text written
+		}
+		if _, err = fTmp.WriteString(line + "\n"); err != nil {
+			return "", "", err
+		}
+	}
+	if state == 0 {
+		headerStr := fmt.Sprintf("# %s\n", header)
+		if _, err = fTmp.WriteString(headerStr); err != nil {
+			return "", "", err
+		}
+		if _, err = fTmp.WriteString(text + "\n"); err != nil {
+			return "", "", err
+		}
+	}
+	return targetFileName, tmpFileName, nil
+}
+
+func storeNow(target string, header string, text string, config config.Config, nowStr string) error {
+	if len(header) > 0 {
+		targetFileName, tmpFileName, err := storeNowWithHeader(target, header, text, config, nowStr)
+		if err != nil {
+			return err
+		}
+		if tmpFileName != "" {
+			backupFileName := fmt.Sprintf("%s.%s.backup", targetFileName, nowStr)
+			err = os.Rename(targetFileName, backupFileName)
+			if err != nil {
+				return err
+			}
+			err = os.Rename(tmpFileName, targetFileName)
+			if err != nil {
+				return err
+			}
+			// TODO maybe remove backup file
+		}
+		return nil
+	} else {
+		return storeNowAppend(target, header, text, config)
+	}
 }
 
 func StoreMemo(memo Memo, config config.Config) error {
@@ -132,14 +237,14 @@ func StoreMemo(memo Memo, config config.Config) error {
 	outputTxt := fmt.Sprintf("* %s [%s]\n", memo.Text, nowStr)
 	if len(memo.Targets) == 0 {
 		// store the memo in the default target
-		err := storeNow(config.DefaultTarget, outputTxt, config)
+		err := storeNow(config.DefaultTarget, memo.Header, outputTxt, config, nowStr)
 		if err == nil {
 			fmt.Printf("  store memo: %s-%s\n", nowStr, config.DefaultTarget)
 		}
 		return err
 	} else {
 		for _, t := range memo.Targets {
-			err := storeNow(t, outputTxt, config)
+			err := storeNow(t, memo.Header, outputTxt, config, nowStr)
 			if err != nil {
 				return err
 			} else {

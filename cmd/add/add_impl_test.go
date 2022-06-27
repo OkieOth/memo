@@ -100,3 +100,56 @@ func TestStoreMemo(t *testing.T) {
 		t.Errorf("Error while deleting tmp file output of the test: %s", testFile)
 	}
 }
+
+func TestStoreMemo_Header1(t *testing.T) {
+	var config config.Config
+	workingDir, err := os.Getwd()
+	if err != nil {
+		t.Error("Error while query current working directory")
+		return
+	}
+	config.TargetDir = workingDir + "/../../tmp"
+	testFile := config.TargetDir + "/add_impl_test_h1.md"
+	// check if there is an old test file in the system
+	_ = utils.DeleteFileIfExist(testFile)
+
+	var memo Memo
+	memo.Text = "I am from TestStoreMemo Header 1"
+	memo.Targets = append(memo.Targets, "add_impl_test_h1")
+	memo.Header = "Header 1"
+	err = StoreMemo(memo, config)
+	if err != nil {
+		t.Errorf("Error while store memo 1: %v", err)
+	}
+
+	var memo2 Memo
+	memo2.Text = "I am Line 2"
+	memo2.Targets = append(memo2.Targets, "add_impl_test_h1")
+	err = StoreMemo(memo2, config)
+	if err != nil {
+		t.Errorf("Error while store memo 2: %v", err)
+	}
+
+	var memo3 Memo
+	memo3.Text = "I am Line 3"
+	memo3.Targets = append(memo3.Targets, "add_impl_test_h1")
+	memo3.Header = "Another Header"
+	err = StoreMemo(memo3, config)
+	if err != nil {
+		t.Errorf("Error while store memo 3: %v", err)
+	}
+
+	memo.Text = "I am from TestStoreMemo Header 1 (v2)"
+	err = StoreMemo(memo, config)
+	if err != nil {
+		t.Errorf("Error while store memo 1.2: %v", err)
+	}
+
+	b, err := utils.DoesFileExist(testFile)
+	if (!b) || (err != nil) {
+		t.Errorf("Seems that the memo file wasn't created: b=%v, err=%v", b, err)
+	}
+	if utils.DeleteFileIfExist(testFile) != nil {
+		t.Errorf("Error while deleting tmp file output of the test: %s", testFile)
+	}
+}
