@@ -2,11 +2,6 @@
 The Memos are stored in markdown files and the given text input can also contain
 mark down format tags.
 
-## Input
-```markdown
-I am a **stupid** memo #target1
-```
-
 ## Storage
 Somewhere in a file target1.md
 ```markdown
