@@ -223,7 +223,7 @@ func storeNow(target string, header string, text string, config config.Config, n
 			if err != nil {
 				return err
 			}
-			// TODO maybe remove backup file
+			_ = os.Remove(backupFileName)
 		}
 		return nil
 	} else {
