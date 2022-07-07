@@ -4,8 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"okieoth/memo/internal/pkg/utils"
 	"os"
+	f "path/filepath"
 )
+
+const DEFAULT_CONFIG_PATH = "$HOME/.memo/config.json"
 
 /*
 The `Config` structure holds all configuration parameter
@@ -21,11 +25,30 @@ type Config struct {
 
 func Get() Config {
 	// look for $HOME/.memo/config.json
-	conf, err := getFromFile("$HOME/.memo/config.json")
+	conf, err := getFromFile(DEFAULT_CONFIG_PATH)
 	if err != nil {
 		conf = getDefaultConfig()
 	}
 	return conf
+}
+
+func (c Config) Write() error {
+	return writeToFile("$HOME/.memo/config.json", c)
+}
+
+func writeToFile(filepath string, config Config) error {
+	dir, _ := f.Split(filepath)
+	_, err := utils.CreateDirIfNotExist(dir)
+	if err != nil {
+		return err
+	}
+	f, err := os.OpenFile(filepath, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// TODO
 }
 
 func getFromFile(filepath string) (Config, error) {
