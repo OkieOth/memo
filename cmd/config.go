@@ -38,34 +38,37 @@ var configCmd = &cobra.Command{
 		if flagPrint {
 			printConfig(&config)
 		} else {
+			changed := false
 			if flagTargetDir != "" {
 				config.TargetDir = flagTargetDir
+				changed = true
 			}
 			if flagDefaultTarget != "" {
 				config.DefaultTarget = flagDefaultTarget
+				changed = true
 			}
-			// TODO store target
-			printConfig(&config)
+			if changed {
+				err := config.Write()
+				if err != nil {
+					fmt.Printf("Error while change configuration: %v", err)
+
+				} else {
+					printConfig(&config)
+				}
+			}
 		}
 
 	},
 }
 
 func printConfig(config *config.Config) {
-	// TODO
-}
-
-func setDefaultTarget(config *config.Config, defaultTarget string) {
-	// TODO
-}
-
-func setTargetDir(config *config.Config, targetDir string) {
-	// TODO
+	output, _ := config.AsJson()
+	_, _ = fmt.Printf("Current memo configuration:\n\n%s\n\n", output)
 }
 
 func init() {
 	rootCmd.AddCommand(configCmd)
-	configCmd.Flags().BoolVarP(&flagPrint, "print", "p", "print current configuration")
-	configCmd.Flags().StringVarP(&flagTargetDir, "targetDir", "t", "set target dir to store the memos")
-	configCmd.Flags().StringVarP(&flagDefaultTarget, "defaultTarget", "d", "set default target")
+	configCmd.Flags().BoolVarP(&flagPrint, "print", "p", false, "print current configuration")
+	configCmd.Flags().StringVarP(&flagTargetDir, "targetDir", "t", "", "set target dir to store the memos")
+	configCmd.Flags().StringVarP(&flagDefaultTarget, "defaultTarget", "d", "", "set default target")
 }
