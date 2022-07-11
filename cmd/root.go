@@ -19,6 +19,8 @@ var rootCmd = &cobra.Command{
 	Short: "A tool to create and manage memos from the terminal",
 	Long: `The tool supports the creation, search and list of on-the-fly
 textual memos from the terminal.
+
+Version 0.2.0
 `,
 	// this command is executed if no command was given over the command line
 	Run: func(cmd *cobra.Command, args []string) {
