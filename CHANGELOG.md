@@ -1,3 +1,6 @@
+# 0.3.0
+* print command
+
 # 0.2.0
 * config command
 * targets command

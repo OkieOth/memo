@@ -7,10 +7,9 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"github.com/spf13/cobra"
 	"okieoth/memo/cmd/add"
 	"os"
-
-	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -20,12 +19,12 @@ var rootCmd = &cobra.Command{
 	Long: `The tool supports the creation, search and list of on-the-fly
 textual memos from the terminal.
 
-Version 0.2.0
+Version 0.3.0
 `,
 	// this command is executed if no command was given over the command line
 	Run: func(cmd *cobra.Command, args []string) {
 		scanner := bufio.NewScanner(os.Stdin)
-		fmt.Print("command? [add|del|done|find|list|exit]: ")
+		fmt.Print("command? [add|del|done|find|print|exit]: ")
 		stayInLoop := true
 		for stayInLoop {
 			stayInLoop = false
@@ -39,14 +38,14 @@ Version 0.2.0
 				doneCmd.Run(cmd, args)
 			case "find":
 				findCmd.Run(cmd, args)
-			case "list":
-				listCmd.Run(cmd, args)
+			case "print":
+				printCmd.Run(cmd, args)
 			case "exit":
 				fmt.Println("bye.")
 				return
 			default:
 				stayInLoop = true
-				fmt.Print("enter a valid command? [add|del|done|find|list|exit]: ")
+				fmt.Print("enter a valid command? [add|del|done|find|print|exit]: ")
 			}
 		}
 	},
