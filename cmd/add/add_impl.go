@@ -166,9 +166,9 @@ func storeNowWithHeaderExistingFile(targetDir string, targetFileName, target str
 	defer fTmp.Close()
 
 	matchHeaderPattern := fmt.Sprintf(`^# *%s$`, header)
-	regexpMatchHeader, _ := regexp.Compile(matchHeaderPattern)
+	regexpMatchHeader := regexp.MustCompile(matchHeaderPattern)
 
-	regexpAnyHeader, _ := regexp.Compile(`^#+ `)
+	regexpAnyHeader := regexp.MustCompile(`^#+ `)
 
 	scanner := bufio.NewScanner(f)
 	var line string

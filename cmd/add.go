@@ -41,11 +41,11 @@ memo add This is my first memo \#target1 \#target2
 		memo.Targets = targets
 		memo.Text = text
 		config := config.Get()
-		run(args, config, memo)
+		runAdd(args, config, memo)
 	},
 }
 
-func run(args []string, config config.Config, memo add.Memo) {
+func runAdd(args []string, config config.Config, memo add.Memo) {
 	if len(memo.Text) == 0 {
 		var stdin add.InitStdin
 		stdin.Stdin = os.Stdin
